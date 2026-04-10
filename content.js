@@ -10,6 +10,10 @@
     return m ? m[1] : null;
   }
 
+  function sleep(ms) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+
   function debounce(ms, fn) {
     let timer;
     return (...args) => {
@@ -18,29 +22,51 @@
     };
   }
 
-  function scrapeFullBreadcrumb() {
+  async function scrapeFullBreadcrumb() {
     const container = document.querySelector(".ItemListBreadcrumb");
     if (!container) return null;
 
     const parts = [];
     const seenTexts = new Set();
 
-    // Step 1: Get hidden parent folders from the overflow area
-    // The overflow component contains links to collapsed parent folders
-    // even when the dropdown is closed.
-    const overflow = container.querySelector(
-      ".ItemListBreadcrumbOverflow",
+    // Step 1: Get hidden parent folders from the overflow dropdown
+    // The menu items are rendered as a portal only while the dropdown is
+    // open, so we click the button, scrape, then close.
+    const overflowBtn = container.querySelector(
+      ".ItemListBreadcrumbOverflow-menuButton",
     );
-    if (overflow) {
-      const items = overflow.querySelectorAll("a[href]");
-      for (const item of items) {
-        const href = item.getAttribute("href") || "";
-        if (/\/folder\/0\b/.test(href)) continue;
-        const text = item.textContent.trim();
-        if (text && !seenTexts.has(text)) {
-          seenTexts.add(text);
-          parts.push(text);
+    if (overflowBtn) {
+      // Hide the dropdown so the user doesn't see it flash open
+      const hideStyle = document.createElement("style");
+      hideStyle.textContent =
+        '[role="menu"], [class*="DropdownMenu-content"], [class*="accessible-menu"] ' +
+        "{ visibility: hidden !important; }";
+      document.head.appendChild(hideStyle);
+
+      try {
+        overflowBtn.click();
+        await sleep(300);
+
+        const menu = document.querySelector(
+          '[role="menu"], [class*="accessible-menu"], [class*="DropdownMenu-content"]',
+        );
+        if (menu) {
+          const menuItems = menu.querySelectorAll("a, [role='menuitem']");
+          for (const item of menuItems) {
+            const href = item.closest("a")?.getAttribute("href") || "";
+            if (/\/folder\/0\b/.test(href)) continue;
+            const text = item.textContent.trim();
+            if (text && !seenTexts.has(text)) {
+              seenTexts.add(text);
+              parts.push(text);
+            }
+          }
         }
+
+        overflowBtn.click();
+        await sleep(100);
+      } finally {
+        hideStyle.remove();
       }
     }
 
@@ -92,13 +118,14 @@
       removeBar();
       return;
     }
-    const path = scrapeFullBreadcrumb();
-    if (!path) return;
-    const currentName = getCurrentFolderName();
-    const lastPart = path[path.length - 1];
-    if (!currentName || lastPart === currentName) {
-      renderBar(path);
-    }
+    scrapeFullBreadcrumb().then((path) => {
+      if (!path) return;
+      const currentName = getCurrentFolderName();
+      const lastPart = path[path.length - 1];
+      if (!currentName || lastPart === currentName) {
+        renderBar(path);
+      }
+    });
   });
 
   function setupObserver() {

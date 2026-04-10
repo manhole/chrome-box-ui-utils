@@ -18,7 +18,7 @@ Single content script injected on `https://*.box.com/*` pages.
 
 Three-step scraping of `.ItemListBreadcrumb`:
 
-1. Overflow dropdown — Programmatically clicks `.ItemListBreadcrumbOverflow-menuButton` to reveal hidden parent folders, scrapes them, then closes the dropdown. Links pointing to `/folder/0` (root "All Files") are excluded.
+1. Overflow dropdown — Programmatically clicks `.ItemListBreadcrumbOverflow-menuButton` to reveal hidden parent folders, scrapes them, then closes the dropdown. Links pointing to `/folder/0` (root "All Files") are excluded. Box renders the menu items as a portal only while the dropdown is open, so static DOM parsing alone cannot retrieve them. To prevent the dropdown from flashing on screen, a temporary `visibility: hidden` style is injected before clicking and removed after scraping.
 2. Visible `<ol>` items — Reads `<li>` elements from the breadcrumb list, deduplicating against overflow results.
 3. Current folder fallback — If the current folder name (from page heading or `document.title`) is missing from the scraped path, it is appended.
 
