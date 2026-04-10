@@ -80,9 +80,14 @@
         const link = li.querySelector("a[href]");
         if (link && /\/folder\/0\b/.test(link.getAttribute("href"))) continue;
 
-        // Try child element first, fall back to li's own text
-        const el = li.querySelector("a, span, button");
-        const text = (el ? el.textContent : li.textContent).trim();
+        // Clone the li and remove classification badges (e.g. "Confidential"
+        // label) that can appear anywhere in the subtree, then extract text.
+        const clone = li.cloneNode(true);
+        for (const badge of clone.querySelectorAll('[data-testid="classification-badge"]')) {
+          badge.remove();
+        }
+        const el = clone.querySelector("a, span, button");
+        const text = (el ? el.textContent : clone.textContent).trim();
         if (!text || seenTexts.has(text)) continue;
         if (/^[.…>\/|]+$/.test(text)) continue;
         seenTexts.add(text);
