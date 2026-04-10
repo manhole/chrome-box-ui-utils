@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Box UI Utils",
+  "version": "0.1.0",
+  "description": "Displays and copies the full folder path on Box",
+  "content_scripts": [
+    {
+      "matches": ["https://*.box.com/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
