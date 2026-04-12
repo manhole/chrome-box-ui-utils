@@ -4,9 +4,9 @@
 
 A Chrome extension that displays and copies the full folder path on [Box](https://www.box.com/).
 
-## Problem
+## Motivation
 
-When navigating deep folder hierarchies on Box, the breadcrumb at the top of the page compresses intermediate folders, making it difficult to see or share the full path.
+Box's breadcrumb hides intermediate folders behind an overflow menu when the folder hierarchy gets deep, so you can't see the full path at a glance — or copy it to share with someone.
 
 ## Solution
 
