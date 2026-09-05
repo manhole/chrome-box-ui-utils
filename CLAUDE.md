@@ -36,4 +36,5 @@ Each scraped part is `{ name, href }`; `href` comes from the breadcrumb anchor a
 ### Conventions
 
 - Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/).
+- `CHANGELOG.md` follows [Keep a Changelog](https://keepachangelog.com/). When bumping `version` in `manifest.json`, move the `Unreleased` entries into a new dated version section.
 - CSS selectors targeting Box DOM may break on Box UI updates.
