@@ -53,12 +53,13 @@
         if (menu) {
           const menuItems = menu.querySelectorAll("a, [role='menuitem']");
           for (const item of menuItems) {
-            const href = item.closest("a")?.getAttribute("href") || "";
-            if (/\/folder\/0\b/.test(href)) continue;
+            const anchor = item.closest("a") || item.querySelector("a");
+            const href = anchor?.getAttribute("href") || null;
+            if (href && /\/folder\/0\b/.test(href)) continue;
             const text = item.textContent.trim();
             if (text && !seenTexts.has(text)) {
               seenTexts.add(text);
-              parts.push(text);
+              parts.push({ name: text, href });
             }
           }
         }
@@ -78,7 +79,8 @@
       for (const li of listItems) {
         // Skip root folder link (/folder/0)
         const link = li.querySelector("a[href]");
-        if (link && /\/folder\/0\b/.test(link.getAttribute("href"))) continue;
+        const href = link?.getAttribute("href") || null;
+        if (href && /\/folder\/0\b/.test(href)) continue;
 
         // Clone the li and remove classification badges (e.g. "Confidential"
         // label) that can appear anywhere in the subtree, then extract text.
@@ -91,14 +93,14 @@
         if (!text || seenTexts.has(text)) continue;
         if (/^[.…>\/|]+$/.test(text)) continue;
         seenTexts.add(text);
-        parts.push(text);
+        parts.push({ name: text, href });
       }
     }
 
     // Step 3: Ensure the current folder name is included
     const currentName = getCurrentFolderName();
-    if (currentName && parts[parts.length - 1] !== currentName) {
-      parts.push(currentName);
+    if (currentName && parts[parts.length - 1]?.name !== currentName) {
+      parts.push({ name: currentName, href: null });
     }
 
     return parts.length > 0 ? parts : null;
@@ -126,7 +128,7 @@
     scrapeFullBreadcrumb().then((path) => {
       if (!path) return;
       const currentName = getCurrentFolderName();
-      const lastPart = path[path.length - 1];
+      const lastPart = path[path.length - 1].name;
       if (!currentName || lastPart === currentName) {
         renderBar(path);
       }
@@ -225,10 +227,32 @@
       breadcrumb.parentElement.insertBefore(bar, breadcrumb.nextSibling);
     }
 
-    const pathStr = pathParts.join(SEPARATOR);
     const textEl = bar.querySelector(".box-path-copier-text");
-    textEl.textContent = pathStr;
-    bar.dataset.path = pathStr;
+    textEl.replaceChildren();
+    pathParts.forEach((part, i) => {
+      if (i > 0) textEl.appendChild(document.createTextNode(SEPARATOR));
+      textEl.appendChild(createPathSegment(part, i === pathParts.length - 1));
+    });
+
+    // The copy button always uses the plain-text path, regardless of rendering
+    bar.dataset.path = pathParts.map((p) => p.name).join(SEPARATOR);
+  }
+
+  // Intermediate folders become plain <a> links (full page navigation, so
+  // modifier-click / right-click behave natively). The current folder (last
+  // segment) and any segment without a usable folder href are plain text.
+  function createPathSegment(part, isLast) {
+    if (!isLast && part.href && /\/folder\/\d+/.test(part.href)) {
+      const a = document.createElement("a");
+      a.className = "box-path-copier-link";
+      a.href = part.href;
+      a.textContent = part.name;
+      return a;
+    }
+    const span = document.createElement("span");
+    span.className = "box-path-copier-segment";
+    span.textContent = part.name;
+    return span;
   }
 
   function removeBar() {

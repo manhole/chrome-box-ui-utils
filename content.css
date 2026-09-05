@@ -54,3 +54,14 @@
 .box-path-copier-btn.is-copied {
   color: #4caf50;
 }
+
+/* ID + class selector so Box's global anchor styles don't override these */
+#box-path-copier-bar .box-path-copier-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+#box-path-copier-bar .box-path-copier-link:hover {
+  color: #0061d5;
+  text-decoration: underline;
+}

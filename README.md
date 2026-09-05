@@ -27,13 +27,16 @@ Navigate to any folder page on Box (`https://app.box.com/folder/...`). A floatin
 ProjectA > Design > 2024 > Q4 > Final Review
 ```
 
-Click the clipboard icon to copy the path.
+Each intermediate folder in the bar is a link to that folder, so you can jump straight to a parent that Box hides in its overflow menu. The current folder (last segment) is plain text.
+
+Click the clipboard icon to copy the path as plain text.
 
 ## How It Works
 
 - A content script is injected on `https://*.box.com/*` pages
 - The breadcrumb element (`.ItemListBreadcrumb`) is monitored via `MutationObserver`
 - Hidden parent folders are retrieved by programmatically expanding the overflow dropdown
+- Intermediate folders are rendered as links using the `href` scraped from Box's breadcrumb
 - The root folder ("All Files" / equivalent in other languages) is excluded by checking for `/folder/0`
 - The current folder name is obtained from the page heading as a fallback
 

@@ -22,6 +22,12 @@ Three-step scraping of `.ItemListBreadcrumb`:
 2. Visible `<ol>` items — Reads `<li>` elements from the breadcrumb list, deduplicating against overflow results.
 3. Current folder fallback — If the current folder name (from page heading or `document.title`) is missing from the scraped path, it is appended.
 
+Each scraped part is `{ name, href }`; `href` comes from the breadcrumb anchor and is `null` when none exists (typically the current folder).
+
+### Rendering (`content.js`)
+
+`renderBar()` builds the bar's DOM from the parts. Intermediate folders whose `href` matches `/folder/<id>` are rendered as plain `<a>` links (full page navigation, not SPA routing — Box's router cannot be invoked from the content script). The current folder (last segment) and any segment without a usable href are plain `<span>`s. The copy button always copies the plain-text `A > B > C` string stored in `bar.dataset.path`, independent of how segments are rendered.
+
 ### Change Detection
 
 - `MutationObserver` on `.ItemListBreadcrumb` element — reacts to breadcrumb DOM changes (debounced 150ms).
