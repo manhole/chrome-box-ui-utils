@@ -34,7 +34,7 @@ Click the clipboard icon to copy the path as plain text.
 ## How It Works
 
 - A content script is injected on `https://*.box.com/*` pages
-- The breadcrumb element (`.ItemListBreadcrumb`) is monitored via `MutationObserver`
+- The breadcrumb element (`nav.Breadcrumb`) is monitored via `MutationObserver`
 - Hidden parent folders are retrieved by programmatically expanding the overflow dropdown
 - Intermediate folders are rendered as links using the `href` scraped from Box's breadcrumb
 - The root folder ("All Files" / equivalent in other languages) is excluded by checking for `/folder/0`
@@ -42,7 +42,7 @@ Click the clipboard icon to copy the path as plain text.
 
 ## Limitations
 
-- The extension relies on Box's current DOM structure (class names like `ItemListBreadcrumb`). Box UI updates may break the scraping.
+- The extension relies on Box's current DOM structure (class names like `Breadcrumb`). Box UI updates may break the scraping.
 - The overflow dropdown is briefly opened and closed to read hidden folders, which may cause a visual flash on initial load.
 - Only folder views are supported (`/folder/{id}` URLs).
 

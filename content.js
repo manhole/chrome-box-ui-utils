@@ -1,13 +1,29 @@
 (() => {
   const SEPARATOR = " > ";
+  const MISSING_WARN_MS = 5000;
   let currentUrl = "";
   let bar = null;
   let breadcrumbObserver = null;
   let currentBreadcrumbEl = null;
+  let missingSince = 0;
+  let missingWarned = false;
 
   function getFolderId() {
     const m = location.pathname.match(/\/folder\/(\d+)/);
     return m ? m[1] : null;
+  }
+
+  // Box renamed the breadcrumb classes (ItemListBreadcrumb -> Breadcrumb).
+  // Accept both, and fall back to the list's data-testid in case the class
+  // names change again.
+  function findBreadcrumb() {
+    return (
+      document.querySelector("nav.Breadcrumb, .ItemListBreadcrumb") ||
+      document
+        .querySelector('[data-testid="item-list-breadcrumb-list"]')
+        ?.closest("nav") ||
+      null
+    );
   }
 
   function sleep(ms) {
@@ -23,7 +39,7 @@
   }
 
   async function scrapeFullBreadcrumb() {
-    const container = document.querySelector(".ItemListBreadcrumb");
+    const container = findBreadcrumb();
     if (!container) return null;
 
     const parts = [];
@@ -32,8 +48,10 @@
     // Step 1: Get hidden parent folders from the overflow dropdown
     // The menu items are rendered as a portal only while the dropdown is
     // open, so we click the button, scrape, then close.
+    // Substring match covers both the old (ItemListBreadcrumbOverflow-) and
+    // the new (BreadcrumbOverflow-) class name.
     const overflowBtn = container.querySelector(
-      ".ItemListBreadcrumbOverflow-menuButton",
+      '[class*="BreadcrumbOverflow-menuButton"]',
     );
     if (overflowBtn) {
       // Hide the dropdown so the user doesn't see it flash open
@@ -47,9 +65,14 @@
         overflowBtn.click();
         await sleep(300);
 
-        const menu = document.querySelector(
-          '[role="menu"], [class*="accessible-menu"], [class*="DropdownMenu-content"]',
-        );
+        // Prefer the menu the button points to, so an unrelated menu that
+        // happens to be open elsewhere on the page is not picked up.
+        const menuId = overflowBtn.getAttribute("aria-controls");
+        const menu =
+          (menuId && document.getElementById(menuId)) ||
+          document.querySelector(
+            '[role="menu"], [class*="accessible-menu"], [class*="DropdownMenu-content"]',
+          );
         if (menu) {
           const menuItems = menu.querySelectorAll("a, [role='menuitem']");
           for (const item of menuItems) {
@@ -72,7 +95,9 @@
     }
 
     // Step 2: Get visible breadcrumb items from the ordered list
-    const list = container.querySelector("ol");
+    // Box also keeps an aria-hidden copy of the list (.is-measurer) for
+    // width measurement; skip it.
+    const list = container.querySelector('ol:not([aria-hidden="true"])');
     if (list) {
       const listItems = list.querySelectorAll("li");
 
@@ -135,15 +160,32 @@
     });
   });
 
+  // A folder page that has had no breadcrumb for this long most likely means
+  // Box changed its DOM. Warn once per URL instead of failing silently.
+  function warnIfBreadcrumbMissing() {
+    if (missingWarned) return;
+    const now = Date.now();
+    if (!missingSince) {
+      missingSince = now;
+    } else if (now - missingSince >= MISSING_WARN_MS) {
+      missingWarned = true;
+      console.warn(
+        "Box UI Utils: breadcrumb not found. Box's DOM may have changed.",
+      );
+    }
+  }
+
   function setupObserver() {
-    const container = document.querySelector(".ItemListBreadcrumb");
+    const container = findBreadcrumb();
 
     if (!container) {
       // Breadcrumb not in DOM yet — teardown and wait for next poll
       teardownObserver();
       removeBar();
+      warnIfBreadcrumbMissing();
       return;
     }
+    missingSince = 0;
 
     // Already observing this exact element
     if (container === currentBreadcrumbEl) return;
@@ -173,6 +215,8 @@
   function checkUrl() {
     if (location.href !== currentUrl) {
       currentUrl = location.href;
+      missingSince = 0;
+      missingWarned = false;
       if (!getFolderId()) {
         teardownObserver();
         removeBar();
@@ -217,7 +261,7 @@
   }
 
   function renderBar(pathParts) {
-    const breadcrumb = document.querySelector(".ItemListBreadcrumb");
+    const breadcrumb = findBreadcrumb();
     if (!breadcrumb) return;
 
     // Re-create if the bar was removed by Box's re-render

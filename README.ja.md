@@ -34,7 +34,7 @@ ProjectA > Design > 2024 > Q4 > Final Review
 ## 仕組み
 
 - `https://*.box.com/*` のページにコンテンツスクリプトを注入
-- パンくず要素 (`.ItemListBreadcrumb`) を `MutationObserver` で監視
+- パンくず要素 (`nav.Breadcrumb`) を `MutationObserver` で監視
 - オーバーフローメニューをプログラムで展開し、非表示の親フォルダを取得
 - 中間フォルダは Box のパンくずから取得した `href` を使ってリンクとして描画
 - ルートフォルダ (「ファイル」等) は `/folder/0` の判定で除外
@@ -42,7 +42,7 @@ ProjectA > Design > 2024 > Q4 > Final Review
 
 ## 制限事項
 
-- Box の現在の DOM 構造 (`ItemListBreadcrumb` 等のクラス名) に依存しています。Box の UI 更新により動作しなくなる可能性があります。
+- Box の現在の DOM 構造 (`Breadcrumb` 等のクラス名) に依存しています。Box の UI 更新により動作しなくなる可能性があります。
 - 初回読み込み時、非表示フォルダの取得のためにオーバーフローメニューが一瞬開閉します。
 - フォルダビュー (`/folder/{id}` URL) のみ対応しています。
 
