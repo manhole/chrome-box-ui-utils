@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Box UI Utils",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Displays and copies the full folder path on Box",
   "content_scripts": [
     {

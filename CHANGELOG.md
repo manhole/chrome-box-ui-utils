@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-12
+
+### Fixed
+
+- The path bar no longer appeared after Box renamed its breadcrumb classes (`ItemListBreadcrumb` → `Breadcrumb`). The breadcrumb is now found by the new class names (the old ones are still accepted), and a console warning is logged when a folder page has no breadcrumb, instead of failing silently.
+
 ## [0.2.0] - 2026-09-05
 
 ### Added
