@@ -10,7 +10,7 @@ Box's breadcrumb hides intermediate folders behind an overflow menu when the fol
 
 ## Solution
 
-Box UI Utils scrapes the full breadcrumb — including folders hidden in the overflow menu — and displays it in a floating bar at the bottom of the page. One click copies the path to your clipboard.
+Box UI Utils scrapes the full breadcrumb — including folders hidden in the overflow menu — and displays it in a bar right below Box's breadcrumb. One click copies the path to your clipboard.
 
 ## Installation
 
@@ -21,7 +21,7 @@ Box UI Utils scrapes the full breadcrumb — including folders hidden in the ove
 
 ## Usage
 
-Navigate to any folder page on Box (`https://app.box.com/folder/...`). A floating bar appears at the bottom of the page showing the full path:
+Navigate to any folder page on Box (`https://app.box.com/folder/...`). A bar appears right below Box's breadcrumb showing the full path:
 
 ```
 ProjectA > Design > 2024 > Q4 > Final Review
